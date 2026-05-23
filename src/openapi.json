@@ -1,0 +1,217 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Citation Generator API",
+    "version": "1.0.0",
+    "description": "REST API for generating academic citations in APA, MLA, and Chicago styles from DOIs, ISBNs, and URLs."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Returns the current health status and server timestamp.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-05-23T12:00:00.000Z"
+                    }
+                  },
+                  "required": ["status", "timestamp"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/styles": {
+      "get": {
+        "summary": "List citation styles",
+        "description": "Returns the list of supported citation styles.",
+        "operationId": "getStyles",
+        "responses": {
+          "200": {
+            "description": "Available citation styles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "styles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["APA", "MLA", "Chicago"]
+                      },
+                      "example": ["APA", "MLA", "Chicago"]
+                    }
+                  },
+                  "required": ["styles"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/citations/generate": {
+      "post": {
+        "summary": "Generate a citation",
+        "description": "Generates a formatted citation for a given identifier (DOI, ISBN, or URL) in the specified style.",
+        "operationId": "generateCitation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              },
+              "examples": {
+                "doi": {
+                  "summary": "DOI example",
+                  "value": {
+                    "identifier": "10.1000/xyz123",
+                    "style": "APA"
+                  }
+                },
+                "isbn": {
+                  "summary": "ISBN example",
+                  "value": {
+                    "identifier": "978-0-13-468599-1",
+                    "style": "MLA"
+                  }
+                },
+                "url": {
+                  "summary": "URL example",
+                  "value": {
+                    "identifier": "https://example.com/article",
+                    "style": "Chicago"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Citation generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missing": {
+                    "summary": "Missing fields",
+                    "value": {
+                      "error": "identifier and style are required"
+                    }
+                  },
+                  "invalidStyle": {
+                    "summary": "Invalid style",
+                    "value": {
+                      "error": "Invalid style. Use one of: APA, MLA, Chicago"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Could not resolve identifier or generate citation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GenerateRequest": {
+        "type": "object",
+        "required": ["identifier", "style"],
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "A DOI, ISBN, or URL to generate a citation for.",
+            "example": "10.1000/xyz123"
+          },
+          "style": {
+            "type": "string",
+            "enum": ["APA", "MLA", "Chicago"],
+            "description": "The citation style to use.",
+            "example": "APA"
+          }
+        }
+      },
+      "GenerateResponse": {
+        "type": "object",
+        "properties": {
+          "citation": {
+            "type": "string",
+            "description": "The formatted citation text.",
+            "example": "Author, A. (2024). Title of work. Publisher. https://doi.org/10.1000/xyz123"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Raw metadata retrieved for the identifier.",
+            "additionalProperties": true
+          },
+          "style": {
+            "type": "string",
+            "enum": ["APA", "MLA", "Chicago"],
+            "description": "The citation style used.",
+            "example": "APA"
+          }
+        },
+        "required": ["citation", "metadata", "style"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message.",
+            "example": "identifier and style are required"
+          }
+        },
+        "required": ["error"]
+      }
+    }
+  }
+}

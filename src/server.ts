@@ -1,4 +1,8 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { SearchRequest } from './search-request.js';
 import { CitationStyle, StyleName } from './citation-style.js';
 import { CitationGenerator } from './citation-generator.js';
@@ -8,8 +12,14 @@ import { WebScraperProvider } from './web-scraper-provider.js';
 import { IdentifierType } from './types.js';
 import { MetadataProvider } from './metadata-provider.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const swaggerDocument = JSON.parse(readFileSync(join(__dirname, 'openapi.json'), 'utf-8'));
+
 const app = express();
 app.use(express.json());
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get('/', (_req, res) => { res.redirect('/docs'); });
 
 const providers = new Map<IdentifierType, MetadataProvider>([
   [IdentifierType.DOI, new CrossrefProvider()],
