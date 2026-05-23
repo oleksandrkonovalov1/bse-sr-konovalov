@@ -103,7 +103,7 @@
                 "url": {
                   "summary": "URL example",
                   "value": {
-                    "identifier": "https://example.com/article",
+                    "identifier": "https://en.wikipedia.org/wiki/Software_engineering",
                     "style": "Chicago"
                   }
                 }
