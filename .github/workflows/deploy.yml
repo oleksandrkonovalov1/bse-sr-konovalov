@@ -29,6 +29,4 @@ jobs:
           script: |
             cd ~/bse-sr-konovalov
             git pull origin main
-            npm install
-            npm run build
-            sudo systemctl restart citation-api
+            sudo docker-compose up -d --build
