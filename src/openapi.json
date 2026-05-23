@@ -89,7 +89,7 @@
                 "doi": {
                   "summary": "DOI example",
                   "value": {
-                    "identifier": "10.1000/xyz123",
+                    "identifier": "10.1145/3544548.3581388",
                     "style": "APA"
                   }
                 },
@@ -169,7 +169,7 @@
           "identifier": {
             "type": "string",
             "description": "A DOI, ISBN, or URL to generate a citation for.",
-            "example": "10.1000/xyz123"
+            "example": "10.1145/3544548.3581388"
           },
           "style": {
             "type": "string",
@@ -185,7 +185,7 @@
           "citation": {
             "type": "string",
             "description": "The formatted citation text.",
-            "example": "Author, A. (2024). Title of work. Publisher. https://doi.org/10.1000/xyz123"
+            "example": "Author, A. (2024). Title of work. Publisher. https://doi.org/10.1145/3544548.3581388"
           },
           "metadata": {
             "type": "object",
