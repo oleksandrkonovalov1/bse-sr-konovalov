@@ -7,12 +7,16 @@
  */
 
 import {
-  Document, Packer, Paragraph, TextRun, Header,
+  Document, Packer, Paragraph, TextRun, Header, ImageRun,
   AlignmentType, PageNumber, HeadingLevel,
   PageBreak, BorderStyle, ShadingType,
   Table, TableRow, TableCell, WidthType, TableBorders,
 } from "docx";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const MM_TO_DXA = 56.693;
 const PT_TO_HALF_PT = 2;
@@ -164,6 +168,34 @@ function numberedItem(num, text) {
     indent: { firstLine: Math.round(12.5 * MM_TO_DXA) },
     alignment: AlignmentType.JUSTIFIED,
     children: [bodyRun(`${num}. ${text}`)],
+  });
+}
+
+function figureCaption(number, title) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 60, after: 120, line: LINE_SPACING_15, lineRule: "auto" },
+    children: [bodyRun(`Рисунок ${number} — ${title}`)],
+  });
+}
+
+function imageParagraph(filePath, widthPx, heightPx) {
+  const imgData = readFileSync(join(__dirname, filePath));
+  const maxWidthEmu = 15.5 * 914400 / 2.54; // ~15.5cm in EMU (page width minus margins)
+  const scale = Math.min(1, maxWidthEmu / (widthPx * 9525));
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 120, after: 0, line: LINE_SPACING_15, lineRule: "auto" },
+    children: [
+      new ImageRun({
+        data: imgData,
+        type: "png",
+        transformation: {
+          width: Math.round(widthPx * scale),
+          height: Math.round(heightPx * scale),
+        },
+      }),
+    ],
   });
 }
 
@@ -549,6 +581,20 @@ const bodyParagraphs = [
   ),
 
   bodyParagraph("Результати CI/CD: усі запуски pipeline завершились успішно. Тести (63/63) проходять перед кожним деплоєм."),
+
+  bodyParagraph("Скріншоти роботи застосунку:"),
+
+  imageParagraph("screenshots/swagger-ui.png", 1510, 810),
+  figureCaption("4.1", "Swagger UI — інтерфейс документації API"),
+
+  imageParagraph("screenshots/health-response.png", 1554, 608),
+  figureCaption("4.2", "Відповідь ендпоінту /health (код 200)"),
+
+  imageParagraph("screenshots/citations-response.png", 1554, 780),
+  figureCaption("4.3", "Відповідь ендпоінту POST /citations/generate (код 200)"),
+
+  imageParagraph("screenshots/hetzner-dashboard.png", 1510, 630),
+  figureCaption("4.4", "Dashboard Hetzner Cloud — сервер у статусі Running"),
 
   // 5 ВИСНОВКИ
   sectionHeading("5", "Висновки", { pageBreakBefore: true }),
